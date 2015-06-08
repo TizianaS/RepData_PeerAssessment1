@@ -1,45 +1,27 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
-```{r}
-echo=TRUE
-```
+# Reproducible Research: Peer Assessment 1
+
 
 ## Loading and preprocessing the data
 To start, let us set the working directory to the local cloned directory, unzip and load the data.
-````{r}
+
+```r
 setwd("~/Documents/Data_Science/Reproducible_Research/RepData_PeerAssessment1/")
 unzip("activity.zip")
 activity<-read.csv("activity.csv")
 ```
 The dates are in "factor" format, we put them to date format with the `as.Date` function.
 
-```{r}
-echo=TRUE
+
+```r
 date<-as.Date(as.character(activity$date))
 activity$date<-date
 ```
 ## What is mean total number of steps taken per day?
-In the following chunk of code, we compute the number of total steps per day:
-```{r}
+In the following chunk of code, we compute the number of total steps per day, as well as the mean and the median of the number of steps per day.
+
+```r
 totalsteps<-aggregate(activity$steps, list(period=activity$date), sum, na.rm=TRUE)
 totalsteps<-complete.cases(totalsteps)
-```
-Now we make a histogram of the total number of steps per day:
-```{r}
-library(ggplot2)
-```
-
-```{r fig.width=6, fig.height=4}
-qplot(totalsteps[,2], xlab = "total number of steps taken each day")
-```
-
-We then compute the mean and the median of the number of steps per day:
-
-```{r}
 meansteps<-aggregate(activity$steps, list(period=activity$date), mean, na.rm=TRUE)
 meansteps<-complete.cases(meansteps)
 mediansteps<-aggregate(activity$steps, list(period=activity$date), median, na.rm=TRUE)
