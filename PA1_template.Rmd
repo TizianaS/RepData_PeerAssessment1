@@ -4,9 +4,6 @@ output:
   html_document:
     keep_md: true
 ---
-```{r}
-echo=TRUE
-```
 
 ## Loading and preprocessing the data
 To start, let us set the working directory to the local cloned directory, unzip and load the data.
@@ -14,11 +11,11 @@ To start, let us set the working directory to the local cloned directory, unzip 
 setwd("~/Documents/Data_Science/Reproducible_Research/RepData_PeerAssessment1/")
 unzip("activity.zip")
 activity<-read.csv("activity.csv")
+echo="TRUE"
 ```
 The dates are in "factor" format, we put them to date format with the `as.Date` function.
 
 ```{r}
-echo=TRUE
 date<-as.Date(as.character(activity$date))
 activity$date<-date
 ```
@@ -26,24 +23,31 @@ activity$date<-date
 In the following chunk of code, we compute the number of total steps per day:
 ```{r}
 totalsteps<-aggregate(activity$steps, list(period=activity$date), sum, na.rm=TRUE)
-totalsteps<-complete.cases(totalsteps)
+head(totalsteps)
 ```
-Now we make a histogram of the total number of steps per day:
+We load the ggplot2 library and make a histogram of the total number of steps per day:
 ```{r}
 library(ggplot2)
 ```
 
 ```{r fig.width=6, fig.height=4}
-qplot(totalsteps[,2], xlab = "total number of steps taken each day")
+qplot(as.vector(totalsteps[,2]), xlab = "total number of steps taken each day")
 ```
 
 We then compute the mean and the median of the number of steps per day:
 
 ```{r}
-meansteps<-aggregate(activity$steps, list(period=activity$date), mean, na.rm=TRUE)
-meansteps<-complete.cases(meansteps)
+meansteps<-aggregate(activity$steps,list(period=activity$date), mean, na.rm=TRUE)
+meansteps<-subset(meansteps,subset=complete.cases(meansteps))
+colnames(meansteps)<-c("Days", "Mean Step Number")
+row.names(meansteps)<-NULL
 mediansteps<-aggregate(activity$steps, list(period=activity$date), median, na.rm=TRUE)
-mediansteps<-complete.cases(mediansteps)
+mediansteps<-subset(mediansteps,subset=complete.cases(meansteps))
+```
+Then, we create the tables for the mean and median values:
+```{r kable}
+library(knitr)
+kable(head(meansteps)); kable(head(mediansteps))
 ```
 
 
