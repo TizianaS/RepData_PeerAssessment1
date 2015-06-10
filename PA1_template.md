@@ -1,4 +1,9 @@
-# Reproducible Research: Peer Assessment 1
+---
+title: "Reproducible Research: Peer Assessment 1"
+output: 
+  html_document:
+    keep_md: true
+---
 
 ## Loading and preprocessing the data
 
@@ -41,14 +46,14 @@ kable(head(totalsteps))
 
 
 
-Days          Total Number of Steps
------------  ----------------------
-2012-10-02                      126
-2012-10-03                    11352
-2012-10-04                    12116
-2012-10-05                    13294
-2012-10-06                    15420
-2012-10-07                    11015
+|Days       | Total Number of Steps|
+|:----------|---------------------:|
+|2012-10-02 |                   126|
+|2012-10-03 |                 11352|
+|2012-10-04 |                 12116|
+|2012-10-05 |                 13294|
+|2012-10-06 |                 15420|
+|2012-10-07 |                 11015|
 
 2. Make a histogram of the total number of steps taken each day
 
@@ -58,16 +63,12 @@ library(ggplot2)
 library(gridExtra) ##useful to combine several ggplot2 plots
 ```
 
-```
-## Loading required package: grid
-```
-
 
 ```r
 qplot(as.vector(totalsteps[,2]), xlab = "Total number of steps taken each day")
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-6-1.png) 
+![plot of chunk unnamed-chunk-6](figure/unnamed-chunk-6-1.png) 
 
 3. Calculate and report the mean and median of the total number of steps taken per day
 We then compute the mean and the median of the total number of steps per day:
@@ -100,14 +101,14 @@ kable(head(meansteps))
 
 
 
- Intervals   Mean Number of Steps
-----------  ---------------------
-         0              1.7169811
-         5              0.3396226
-        10              0.1320755
-        15              0.1509434
-        20              0.0754717
-        25              2.0943396
+| Intervals| Mean Number of Steps|
+|---------:|--------------------:|
+|         0|            1.7169811|
+|         5|            0.3396226|
+|        10|            0.1320755|
+|        15|            0.1509434|
+|        20|            0.0754717|
+|        25|            2.0943396|
 
 As asked in point 1, we make a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days, which we labelled  $(\text{N}^{\text{tot}}_{\text{steps}})_{\text{days}}$ (y-axis).
 
@@ -117,7 +118,7 @@ q<- qplot(meansteps[,1],meansteps[,2],type="l",xlab = "Time intervals",geom = "l
 q + ylab(expression((N[steps]^tot)[days]))
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-10-1.png) 
+![plot of chunk unnamed-chunk-10](figure/unnamed-chunk-10-1.png) 
 
 2. Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
 The following code gives the answer:
@@ -162,14 +163,14 @@ kable(head(activityrep),align="c")
 
 
 
-   steps         date       interval 
------------  ------------  ----------
- 1.7169811    2012-10-01       0     
- 0.3396226    2012-10-01       5     
- 0.1320755    2012-10-01       10    
- 0.1509434    2012-10-01       15    
- 0.0754717    2012-10-01       20    
- 2.0943396    2012-10-01       25    
+|   steps   |    date    | interval |
+|:---------:|:----------:|:--------:|
+| 1.7169811 | 2012-10-01 |    0     |
+| 0.3396226 | 2012-10-01 |    5     |
+| 0.1320755 | 2012-10-01 |    10    |
+| 0.1509434 | 2012-10-01 |    15    |
+| 0.0754717 | 2012-10-01 |    20    |
+| 2.0943396 | 2012-10-01 |    25    |
 
 4. Make a histogram of the total number of steps taken each day and calculate and report the mean and median total number of steps taken per day. Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?
 
@@ -184,7 +185,7 @@ colnames(totalsteps2)<-c("Days","Total Number of Steps")
 qplot(as.vector(totalsteps2[,2]), xlab = "Total number of steps taken each day")
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-16-1.png) 
+![plot of chunk unnamed-chunk-16](figure/unnamed-chunk-16-1.png) 
 
 
 ```r
@@ -223,14 +224,14 @@ kable(head(activityf),align="c")
 
 
 
- factordays      steps      interval 
-------------  -----------  ----------
-     1         1.7169811       0     
-     1         0.3396226       5     
-     1         0.1320755       10    
-     1         0.1509434       15    
-     1         0.0754717       20    
-     1         2.0943396       25    
+| factordays |   steps   | interval |
+|:----------:|:---------:|:--------:|
+|     1      | 1.7169811 |    0     |
+|     1      | 0.3396226 |    5     |
+|     1      | 0.1320755 |    10    |
+|     1      | 0.1509434 |    15    |
+|     1      | 0.0754717 |    20    |
+|     1      | 2.0943396 |    25    |
 
 2. Make a panel plot containing a time series plot (i.e. `type = "l"`) of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis). 
 
@@ -268,6 +269,6 @@ print(p, vp=viewport(layout.pos.row=1, layout.pos.col=1))
 print(s, vp=viewport(layout.pos.row=2, layout.pos.col=1))
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-24-1.png) 
+![plot of chunk unnamed-chunk-24](figure/unnamed-chunk-24-1.png) 
 
 There seems to be a pattern difference between weekdays and weekends, with a tendency to walk more during weekends.
