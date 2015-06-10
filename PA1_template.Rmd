@@ -6,57 +6,185 @@ output:
 ---
 
 ## Loading and preprocessing the data
+
+1. Load the data 
 To start, let us set the working directory to the local cloned directory, unzip and load the data.
 ````{r}
 setwd("~/Documents/Data_Science/Reproducible_Research/RepData_PeerAssessment1/")
 unzip("activity.zip")
 activity<-read.csv("activity.csv")
+activitynona<-na.omit(activity)
 echo="TRUE"
 ```
+
+2. Process/transform the data (if necessary) into a format suitable for your analysis
 The dates are in "factor" format, we put them to date format with the `as.Date` function.
 
 ```{r}
-date<-as.Date(as.character(activity$date))
-activity$date<-date
+date<-as.Date(as.character(activitynona$date))
+activitynona$date<-date
 ```
 ## What is mean total number of steps taken per day?
+
+For this part of the assignment, you can ignore the missing values in the dataset.
+
+1. Calculate the total number of steps taken per day
 In the following chunk of code, we compute the number of total steps per day:
 ```{r}
-totalsteps<-aggregate(activity$steps, list(period=activity$date), sum, na.rm=TRUE)
-head(totalsteps)
+totalsteps<-aggregate(activitynona$steps, list(days=activitynona$date), sum)
+colnames(totalsteps)<-c("Days","Total Number of Steps")
 ```
-We load the ggplot2 library and make a histogram of the total number of steps per day:
+We create a table with the head of the total steps values
+```{r}
+library(knitr)
+kable(head(totalsteps))
+```
+
+2. Make a histogram of the total number of steps taken each day
+
 ```{r}
 library(ggplot2)
+library(gridExtra) ##useful to combine several ggplot2 plots
 ```
 
 ```{r fig.width=6, fig.height=4}
-qplot(as.vector(totalsteps[,2]), xlab = "total number of steps taken each day")
+qplot(as.vector(totalsteps[,2]), xlab = "Total number of steps taken each day")
 ```
 
-We then compute the mean and the median of the number of steps per day:
+3. Calculate and report the mean and median of the total number of steps taken per day
+We then compute the mean and the median of the total number of steps per day:
 
 ```{r}
-meansteps<-aggregate(activity$steps,list(period=activity$date), mean, na.rm=TRUE)
-meansteps<-subset(meansteps,subset=complete.cases(meansteps))
-colnames(meansteps)<-c("Days", "Mean Step Number")
-row.names(meansteps)<-NULL
-mediansteps<-aggregate(activity$steps, list(period=activity$date), median, na.rm=TRUE)
-mediansteps<-subset(mediansteps,subset=complete.cases(meansteps))
+meantotalsteps<- mean(totalsteps[,2])
+mediantotalsteps<-median(totalsteps[,2])
 ```
-Then, we create the tables for the mean and median values:
-```{r kable}
-library(knitr)
-kable(head(meansteps)); kable(head(mediansteps))
-```
+The mean value is: `r options(scipen=999); round(meantotalsteps, digit=2)` and the median value is: `r mediantotalsteps`. 
+
 
 
 ## What is the average daily activity pattern?
 
+1. Make a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
 
+First we build a table of the total number of steps for each interval, averaged  accross all days. We denote this quantity $(\text{N}^{\text{tot}}_{\text{steps}})_{\text{days}}$.
+
+```{r}
+meansteps<-aggregate(activitynona$steps, list(interval=activitynona$interval), mean)
+colnames(meansteps)<-c("Intervals","Mean Number of Steps")
+```
+
+```{r}
+kable(head(meansteps))
+```
+
+As asked in point 1, we make a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days, which we labelled  $(\text{N}^{\text{tot}}_{\text{steps}})_{\text{days}}$ (y-axis).
+
+```{r fig.width=6, fig.height=4}
+q<- qplot(meansteps[,1],meansteps[,2],type="l",xlab = "Time intervals",geom = "line")
+q + ylab(expression((N[steps]^tot)[days]))
+```
+
+2. Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
+The following code gives the answer:
+
+```{r}
+meansteps[which(meansteps[,2]==max(meansteps[,2]),TRUE),1]
+```
 
 ## Imputing missing values
+Note that there are a number of days/intervals where there are missing values (coded as `NA`). The presence of missing days may introduce bias into some calculations or summaries of the data.
 
+1. Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with `NA`s)
 
+```{r}
+sum(!complete.cases(activity))
+```
+2. Devise a strategy for filling in all of the missing values in the dataset. The strategy does not need to be sophisticated. For example, you could use the mean/median for that day, or the mean for that 5-minute interval, etc.
+
+```{r,results="hide"}
+activityrep<-activity
+sapply(unique(activityrep$interval),function(x){activityrep[!complete.cases(activityrep) & (activityrep$interval== x),1] <<- meansteps$Mean[meansteps$Interval==x]})
+```
+
+3. Create a new dataset that is equal to the original dataset but with the missing data 
+filled in.
+
+```{r}
+kable(head(activityrep),align="c")
+```
+
+4. Make a histogram of the total number of steps taken each day and calculate and report the mean and median total number of steps taken per day. Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?
+
+```{r}
+totalsteps2<-aggregate(activityrep$steps, list(days=activityrep$date), sum)
+colnames(totalsteps2)<-c("Days","Total Number of Steps")
+```
+
+```{r fig.width=6, fig.height=4}
+qplot(as.vector(totalsteps2[,2]), xlab = "Total number of steps taken each day")
+```
+
+```{r}
+meantotalsteps2<- mean(totalsteps2[,2])
+mediantotalsteps2<-median(totalsteps2[,2])
+```
+
+The mean value is: `r options(scipen=999); round(meantotalsteps2, digit=2)` and the median value is: `r round(mediantotalsteps2,digit=2)` whereas the values obtained ignoring `NA`s were `r options(scipen=999); round(meantotalsteps, digit=2)` and  `r mediantotalsteps` respectively. After replacing the missing values by their mean over the days, the mean of  $\text{N}^{\text{tot}}_{\text{steps}}$  is left unchanged, while the median of $\text{N}^{\text{tot}}_{\text{steps}}$ is now equal to its mean (the dataset is now symmetric around the mean).
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+For this part the `weekdays()` function may be of some help here. Use the dataset with the filled-in missing values for this part.
+
+1. Create a new factor variable in the dataset with two levels – “weekday” and “weekend” indicating whether a given date is a weekday or weekend day.
+
+```{r,results="hide"}
+Sys.setlocale("LC_TIME", "en_US.UTF-8") ##to get the weekdays in English
+```
+We create a dataframe adding a factor to the activity table, with level 1 and label "weekday"  for weekdays, and with level 2 and label "weekend" for weekends to the steps and interval data.
+
+
+```{r}
+weekday<- weekdays(as.Date(activityrep$date))
+factordays<-numeric()
+factordays<-as.vector(sapply(weekday, function(x) {factordays<-if(x=="Saturday"|x=="Sunday"){factordays<-2} else {factordays<-1}}))
+factordays<-factor(factordays,labels=cbind("weekday","weekend"))
+activityf<-as.data.frame(cbind(factordays, steps=activityrep$steps,interval=activityrep$interval))
+```
+
+```{r}
+kable(head(activityf),align="c")
+```
+
+2. Make a panel plot containing a time series plot (i.e. `type = "l"`) of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis). 
+
+We split the data according to weekdays and weekends.
+```{r}
+weekdaysact<-subset(activityf,subset=activityf$factordays==1)
+weekendsact<-subset(activityf,subset=activityf$factordays==2)
+```
+
+We compute the mean accross the weekdays and the weekends for each interval.
+```{r}
+meanweekday<-aggregate(weekdaysact$steps, list(interval=weekdaysact$interval), mean)
+meanweekend<-aggregate(weekendsact$steps, list(interval=weekendsact$interval), mean)
+```
+
+We construct the  time series plots:
+
+```{r,results="hide"}
+p<- qplot(meanweekday[,1],meanweekday[,2],type="l",xlab = "",geom = "line")
+p<-p + ylab(expression((N[steps]^tot)[weekdays]))
+s<- qplot(meanweekend[,1],meanweekend[,2],type="l",xlab = "Time intervals",geom = "line")
+s<-s + ylab(expression((N[steps]^tot)[weekends]))
+```
+
+We combine the two plots into one:
+
+```{r fig.width=6, fig.height=8}
+grid.newpage()
+pushViewport(viewport(layout=grid.layout(2,1)))
+print(p, vp=viewport(layout.pos.row=1, layout.pos.col=1))
+print(s, vp=viewport(layout.pos.row=2, layout.pos.col=1))
+```
+
+There seems to be a pattern difference between weekdays and weekends, with a tendency to walk more during weekends.
